@@ -2,6 +2,22 @@
 
 A full-screen, explorable Three.js garden reception, built with Next.js App Router, React, TypeScript, Framer Motion and GSAP. The scene is an imagined setting, not a reconstruction of Fr. Lopez Hall. Actual event information and all original photographs and the invitation are preserved.
 
+## Reuse and customize
+
+All invitation-specific content lives in one typed file: `app/invitation-config.ts`. Update that file to reuse the experience; the interface, accessible fallback, SEO metadata, calendar download and 3D venue all consume the same values.
+
+1. Change `identity`, `people`, `event` and `venue`. The displayed date/time and `.ics` calendar data are derived from the single ISO timestamp in `event.start` using the configured IANA time zone.
+2. Put replacement files under `public/` and update `media`. The gallery accepts any non-empty number of images; counters, playback, thumbnails and 3D frames stay synchronized automatically. Every image entry includes its accessible alt text.
+3. Customize all interface language under `zones` and `copy`, plus the 3D text, responsive destination-camera framing, invitation stand, tabletop celebration card and compact venue-card dimensions under `scene`.
+4. Change the interface palette and fonts under `theme.css`. Change the materials, sky, lights, flowers, particles and 3D canvas fonts under `theme.world`.
+5. Update the optional credit link and `seo.fallbackBaseUrl`. Replace the configured favicon asset if the initials or mark change.
+
+Keep `scene.venueCard` wider than it is tall; its card artwork scales vertically with the configured dimensions.
+Keep `scene.invitationDisplay.supportDepth` behind the framed artwork and its paired supports inside the frame edges.
+Keep `scene.celebrationCard` upright and positioned on a table surface; its camera framing, angle and displayed event details all follow that single configuration.
+
+Keep public asset paths root-relative (for example, `/images/couple.webp`). Run `npm test` after editing the configuration; it checks the date/calendar derivation, destination completeness, gallery labels, theme values and whether every configured local asset exists.
+
 ## Explore
 
 - Drag to orbit. Mouse-wheel, trackpad and button zoom use time-based damping for gradual movement. Pinch zoom and explicit reset controls are also available. Scrolling outside the canvas remains native.
@@ -10,7 +26,7 @@ A full-screen, explorable Three.js garden reception, built with Next.js App Rout
 - Take a guided camera tour. Manual camera interaction pauses the tour.
 - Switch between evening and golden hour.
 - Trigger a confetti celebration around the floral stage.
-- Browse seven real gallery photographs in a three-frame garden display. Use the thumbnail filmstrip, on-screen or keyboard arrows, or click a neighboring photograph. Optional playback advances every 5.5 seconds and pauses on manual interaction.
+- Browse the configured gallery photographs in a three-frame garden display. Use the thumbnail filmstrip, on-screen or keyboard arrows, or click a neighboring photograph. Optional playback follows `behavior.galleryAutoplayMs` and pauses on manual interaction.
 - Photographs crossfade inside their frames, preserving portrait / landscape proportions and your camera position. Gallery textures are cached after the first visit.
 - Switch between the couple and individual portraits at the stage. Qualifications and event details appear on physical boards.
 - Use Look closer to inspect the invitation or photograph with the navigation hidden.
@@ -31,6 +47,7 @@ On Vercel select Next.js, with `pnpm build:next` as the build command. No API ke
 
 ## Source
 
+- `app/invitation-config.ts`: the single source of truth for names, profiles, event/venue details, all copy, images, links, behavior timings, SEO inputs and both the interface and 3D color themes.
 - `app/wedding-world.ts`: procedural Three.js venue, actual photograph textures, OrbitControls, mesh raycasting, projected HTML hotspots, GSAP camera flights, lighting and confetti.
 - `app/page.tsx`: experience shell, guided tour, compact scene controls, keyboard gallery navigation, calendar download and accessible fallback.
 - `app/experience.css`: immersive interface and responsive destination controls.
@@ -38,12 +55,21 @@ On Vercel select Next.js, with `pnpm build:next` as the build command. No API ke
 - `public/images`: original imagery and optimized WebP versions.
 - `public/fonts`: local Cormorant Garamond and Manrope.
 
-The venue includes textured linen, wood, stone and grass; folded fabric, rounded furniture, glass lanterns, reflected ambient light, soft desktop shadows and separate twilight / golden-hour skies. The entrance moves to eye level down the aisle.
+The venue includes textured linen, wood, stone and grass; folded fabric, rounded furniture, glass lanterns, reflected ambient light, filtered desktop shadows and separate twilight / golden-hour skies. The entrance moves to eye level down the aisle.
 
 Flowers and foliage use instanced geometry; static decor is batched by material and destination to keep draw calls low. Shadow resolution and pixel ratio are capped. Rendering pauses while the browser is hidden. The venue stays alive while browsing its destinations. All geometry, textures, controls, timelines and renderer resources are disposed on unmount. Reduced motion disables auto-rotation, fireflies, confetti, photo fades, smooth scrolling and animated camera flights. If WebGL fails, the original photograph and all content actions remain available.
 
-The reception is Tuesday, 20 October 2026 at 17:30 IST (12:00 UTC), Fr. Lopez Hall, Colachel. No end time was supplied, so the calendar does not invent one. No RSVP backend is simulated.
+The included sample has no event end time, so the generated calendar does not invent one. No RSVP backend is simulated.
 
 ## Validation
 
-Standard Next.js production compilation and TypeScript validation passed. CPU scene checks cover 1440×900, 390×844 and 320×568 camera setups, image aspect ratios, texture selection, lighting switches, zoom limits and resource disposal. Wheel checks verify gradual movement, matching responses at 60 / 120 Hz, line / pixel delta normalization and cancellation on destination changes. These checks do not verify GPU appearance; browser visual and interaction QA remains necessary on target devices.
+Use the checks in this order after a customization:
+
+```text
+npm test
+npm run typecheck
+npm run lint
+npm run build:next
+```
+
+The automated configuration tests cover derived dates and calendar output, public asset existence, gallery uniqueness and alt text, destination completeness, and theme token validity. The production build validates the React and Three.js integration. Browser visual and interaction QA is still recommended on representative desktop and mobile devices because automated checks do not verify GPU appearance.
